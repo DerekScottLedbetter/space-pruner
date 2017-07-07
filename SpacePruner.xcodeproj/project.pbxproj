@@ -14,6 +14,7 @@
 		657FB1C31F0E177400452EA8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1C21F0E177400452EA8 /* Assets.xcassets */; };
 		657FB1C61F0E177400452EA8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1C41F0E177400452EA8 /* LaunchScreen.storyboard */; };
 		657FB1C91F0E177400452EA8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1C81F0E177400452EA8 /* main.m */; };
+		65F8A5EF1F103A7900D3D221 /* interleaved_despacer.c in Sources */ = {isa = PBXBuildFile; fileRef = 65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,8 @@
 		657FB1C51F0E177400452EA8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		657FB1C71F0E177400452EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		657FB1C81F0E177400452EA8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = interleaved_despacer.c; sourceTree = "<group>"; };
+		65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interleaved_despacer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +65,8 @@
 		657FB1B81F0E177400452EA8 /* SpacePruner */ = {
 			isa = PBXGroup;
 			children = (
+				65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */,
+				65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */,
 				652BA0631F0F11D000A692A9 /* despacer.h */,
 				652BA0651F0F18BD00A692A9 /* despacebenchmark.h */,
 				652BA0641F0F11D000A692A9 /* despacebenchmark.c */,
@@ -151,6 +156,7 @@
 				657FB1BE1F0E177400452EA8 /* ViewController.m in Sources */,
 				657FB1C91F0E177400452EA8 /* main.m in Sources */,
 				657FB1BB1F0E177400452EA8 /* AppDelegate.m in Sources */,
+				65F8A5EF1F103A7900D3D221 /* interleaved_despacer.c in Sources */,
 				652BA0661F0F199A00A692A9 /* despacebenchmark.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
