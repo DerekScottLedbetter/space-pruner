@@ -54,13 +54,18 @@ static inline uint16_t is_not_zero(uint8x16_t v) {
 * credit: Cyril Lashkevich
 */
 
+#define PRINT_8x16(var) ((void)printf("%s = %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X\n", #var, var[0], var[1], var[2], var[3], var[4], var[5], var[6], var[7], var[8], var[9], var[10], var[11], var[12], var[13], var[14], var[15]))
 
 static inline size_t neon_despace(char *bytes, size_t howmany) {
    size_t i = 0, pos = 0;
   const size_t chunk_size = 16 * 4 * 1;
   uint8x16_t justone = vdupq_n_u8(1);
   for (; i + chunk_size <= howmany; /*i += chunk_size*/) {
-    uint8x16x4_t vecbytes = vld4q_u8((uint8_t *)bytes + i);
+    uint8_t* const source = (uint8_t *)bytes + i;
+    uint8x16x4_t vecbytes = {
+      vld1q_u8(source), vld1q_u8(source + 16), vld1q_u8(source + 32), vld1q_u8(source +  48)
+    };
+
     uint8x16_t w0 = is_white(vecbytes.val[0]);
     uint64_t haswhite0 = is_not_zero(w0);
     w0 = vaddq_u8(justone, w0);
@@ -73,6 +78,7 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
     uint8x16_t w3 = is_white(vecbytes.val[3]);
     uint64_t haswhite3 = is_not_zero(w3);
     w3 = vaddq_u8(justone, w3);
+
     if(!haswhite0) {
       vst1q_u8((uint8_t *)bytes + pos,vecbytes.val[0]);
       pos += 16;

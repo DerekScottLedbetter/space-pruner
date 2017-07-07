@@ -27,7 +27,7 @@ static inline uint64_t time_in_ns() {
       size_t result_length = test(tmpbuffer, N);                               \
       const uint64_t cycles_final = time_in_ns();                              \
                                                                                \
-      if (0 && i == 0 && result_length <= N) {                                 \
+      if (false && i == 0 && result_length <= N) {                             \
         tmpbuffer[result_length] = 0;                                          \
         printf("\"%s\"\n", tmpbuffer);                                         \
       }                                                                        \
@@ -74,7 +74,8 @@ size_t fillwithtext(char *buffer, size_t size) {
 
 void despace_benchmark(void) {
   const int N = 1024 * 32;
-  int alignoffset = 0;
+  const int repeat = 100;
+  const int alignoffset = 0;
 
   // Add one in case we want to null-terminate.
   char *origbuffer = malloc(N + alignoffset + 1);
@@ -84,7 +85,6 @@ void despace_benchmark(void) {
   char *correctbuffer = malloc(N + 1);
   printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(tmpbuffer)));
 
-  int repeat = 100;
   size_t howmanywhite = fillwithtext(buffer, N);
 
   int j = 0;
