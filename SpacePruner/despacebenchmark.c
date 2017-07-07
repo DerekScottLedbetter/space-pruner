@@ -25,29 +25,6 @@ const char * nameofcycles = "ns";
 
 
 
-#define BEST_TIME_NOCHECK(test, pre, repeat, size)                                  \
-  do {                                                                         \
-    printf("%-40s: ", #test);                                                     \
-    fflush(NULL);                                                              \
-    uint64_t cycles_start, cycles_final, cycles_diff;                          \
-    uint64_t min_diff = (uint64_t)-1;                                          \
-    for (int i = 0; i < repeat; i++) {                                         \
-      pre;                                                                     \
-      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      RDTSC_START(cycles_start);                                               \
-      test;                                                       \
-      RDTSC_FINAL(cycles_final);                                               \
-      cycles_diff = (cycles_final - cycles_start);                             \
-      if (cycles_diff < min_diff)                                              \
-        min_diff = cycles_diff;                                                \
-    }                                                                          \
-    uint64_t S = (uint64_t)size;                                               \
-    float cycle_per_op = (min_diff) / (float)S;                                \
-    printf(" %.3f %s per operation", cycle_per_op, nameofcycles);                        \
-    printf("\n");                                                              \
-    fflush(NULL);                                                              \
-  } while (0)
-
 #define BEST_TIME_NOCHECK_NOPRE(test, repeat, size)                                  \
   do {                                                                         \
     printf("%-40s: ", #test);                                                     \
@@ -72,55 +49,34 @@ const char * nameofcycles = "ns";
 
 
 
-#define BEST_TIME_NOPRE(test, answer,  repeat, size)                                  \
+#define BEST_TIME(test)                                                        \
   do {                                                                         \
-    printf("%-40s: ", #test);                                                     \
     fflush(NULL);                                                              \
-    uint64_t cycles_start, cycles_final, cycles_diff;                          \
-    uint64_t min_diff = (uint64_t)-1;                                          \
-    int wrong_answer = 0;                                                      \
-    RDTSC_START(cycles_start);                                               \
-    for (int i = 0; i < repeat; i++) {                                         \
-      if ((test != answer) && (wrong_answer == 0)) {                                                    \
-        printf("ERROR: returned: %d, expected: %d\n", (int) test, (int)answer); \
-        wrong_answer = 1;                                                      \
-      }                                                                          \
-    }                                                                          \
-    RDTSC_FINAL(cycles_final);                                               \
-    cycles_diff = (cycles_final - cycles_start);                             \
-    min_diff = cycles_diff;                                                \
-    uint64_t S = (uint64_t)size;                                               \
-    float cycle_per_op = (min_diff) / ((float)S * repeat);                                \
-    printf(" %.3f %s per operation", cycle_per_op, nameofcycles);                        \
-    if (wrong_answer)                                                          \
-      printf(" [ERROR]");                                                      \
-    printf("\n");                                                              \
-    fflush(NULL);                                                              \
-  } while (0)
-
-
-
-#define BEST_TIME(test, answer, pre, repeat, size)                                  \
-  do {                                                                         \
-    printf("%-40s: ", #test);                                                     \
-    fflush(NULL);                                                              \
-    uint64_t cycles_start, cycles_final, cycles_diff;                          \
     uint64_t min_diff = (uint64_t)-1;                                          \
     int wrong_answer = 0;                                                      \
     for (int i = 0; i < repeat; i++) {                                         \
-       pre;                                                                     \
+      uint64_t cycles_start, cycles_final, cycles_diff;                        \
+      memcpy(tmpbuffer, buffer, N);                                            \
+                                                                               \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
       RDTSC_START(cycles_start);                                               \
-      if (test != answer)                                                      \
-        wrong_answer = 1;                                                      \
+      size_t result_length = test(tmpbuffer, N);                               \
       RDTSC_FINAL(cycles_final);                                               \
+                                                                               \
+      if (0 && i == 0 && result_length <= N) {                                 \
+        tmpbuffer[result_length] = 0;                                          \
+        printf("\"%s\"\n", tmpbuffer);                                         \
+      }                                                                        \
+      if (result_length != N - howmanywhite                                    \
+            || memcmp(tmpbuffer, correctbuffer, result_length) != 0)           \
+        wrong_answer = 1;                                                      \
       cycles_diff = (cycles_final - cycles_start);                             \
       if (cycles_diff < min_diff)                                              \
         min_diff = cycles_diff;                                                \
     }                                                                          \
-    uint64_t S = (uint64_t)size;                                               \
-    float cycle_per_op = (min_diff) / (float)S;                                \
-    printf(" %.2f %s per operation", cycle_per_op, nameofcycles);                        \
+    printf("%-40s: ", #test);                                                  \
+    float cycle_per_op = (min_diff) / (float)N;                                \
+    printf(" %.2f %s per operation", cycle_per_op, nameofcycles);              \
     if (wrong_answer)                                                          \
       printf(" [ERROR]");                                                      \
     printf("\n");                                                              \
@@ -155,24 +111,35 @@ void despace_benchmark(void) {
   const int N = 1024 * 32;
   int alignoffset = 0;
 
-  char *origbuffer = malloc(N + alignoffset);
-  char *origtmpbuffer = malloc(N + alignoffset);
+  // Add one in case we want to null-terminate.
+  char *origbuffer = malloc(N + alignoffset + 1);
+  char *origtmpbuffer = malloc(N + alignoffset + 1);
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
-  printf("pointer alignment = %d bytes \n", 1<< __builtin_ctzll((uintptr_t)(const void *)(buffer)));
+  char *correctbuffer = malloc(N + 1);
+  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
 
   int repeat = 100;
   size_t howmanywhite = fillwithtext(buffer, N);
 
-  BEST_TIME_NOCHECK_NOPRE(memcpy(tmpbuffer,buffer,N),
+  int j = 0;
+  for (int i = 0; i < N; ++i) {
+    char c = buffer[i];
+    if (c > 32) {
+      correctbuffer[j++] = c;
+    }
+  }
+  assert(j == N - howmanywhite);
+
+  BEST_TIME_NOCHECK_NOPRE(memcpy(tmpbuffer, buffer, N),
                    repeat, N);
   printf("\n");
-  BEST_TIME(despace(buffer, N), N - howmanywhite,
-                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME(despace);
 #if __ARM_NEON
-  BEST_TIME(neon_despace(buffer, N), N - howmanywhite,
-                  howmanywhite = fillwithtext(buffer, N), repeat, N);
+  BEST_TIME(neon_despace);
 #endif // __ARM_NEON
+
+  free(correctbuffer);
   free(origbuffer);
   free(origtmpbuffer);
 }
