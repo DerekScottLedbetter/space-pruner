@@ -25,30 +25,6 @@ const char * nameofcycles = "ns";
 
 
 
-#define BEST_TIME_NOCHECK_NOPRE(test, repeat, size)                                  \
-  do {                                                                         \
-    printf("%-40s: ", #test);                                                     \
-    fflush(NULL);                                                              \
-    uint64_t cycles_start, cycles_final, cycles_diff;                          \
-    uint64_t min_diff = (uint64_t)-1;                                          \
-    RDTSC_START(cycles_start);                                               \
-    for (int i = 0; i < repeat; i++) {                                         \
-      __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-       test;                                                       \
-    }                                                                          \
-    RDTSC_FINAL(cycles_final);                                               \
-    cycles_diff = (cycles_final - cycles_start);                             \
-    min_diff = cycles_diff;                                                \
-    uint64_t S = (uint64_t)size;                                               \
-    float cycle_per_op = (min_diff) / ((float)S * repeat);                                \
-    printf(" %.3f %s per operation", cycle_per_op, nameofcycles);                        \
-    printf("\n");                                                              \
-    fflush(NULL);                                                              \
-  } while (0)
-
-
-
-
 #define BEST_TIME(test)                                                        \
   do {                                                                         \
     fflush(NULL);                                                              \
@@ -131,8 +107,6 @@ void despace_benchmark(void) {
   }
   assert(j == N - howmanywhite);
 
-  BEST_TIME_NOCHECK_NOPRE(memcpy(tmpbuffer, buffer, N),
-                   repeat, N);
   printf("\n");
   BEST_TIME(despace);
 #if __ARM_NEON
