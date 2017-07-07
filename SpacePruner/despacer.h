@@ -14,7 +14,7 @@ static inline size_t despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-#if TARGET_CPU_ARM && __ARM_NEON
+#if __ARM_NEON
 // let us go neon
 #include <arm_neon.h>
 
@@ -25,7 +25,6 @@ static inline uint8x16_t is_white(uint8x16_t data) {
   return isw;
 }
 
-#if 0
 
 
 ////////////
@@ -125,7 +124,6 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
   return pos;
 }
 
-#endif // 0
-#endif // TARGET_CPU_ARM
+#endif // __ARM_NEON
 
 #endif // end of file

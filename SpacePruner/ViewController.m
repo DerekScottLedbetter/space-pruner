@@ -8,6 +8,8 @@
 
 #import "ViewController.h"
 
+#include "despacebenchmark.h"
+
 @interface ViewController () {
     BOOL _currentlyRunning; // TODO: change to property
 }
@@ -59,9 +61,9 @@
     [self updateRunButton];
     __weak ViewController *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(void) {
-        // TODO
-        sleep(5);
-        NSString* message = @"Slept for 5 seconds.\n";
+        // TODO: print results to screen.
+        despace_benchmark();
+        NSString* message = @"Printed benchmark results to log.\n";
 
         ViewController* self = weakSelf;
         if (self) {

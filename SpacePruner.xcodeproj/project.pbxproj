@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		652BA0661F0F199A00A692A9 /* despacebenchmark.c in Sources */ = {isa = PBXBuildFile; fileRef = 652BA0641F0F11D000A692A9 /* despacebenchmark.c */; };
 		657FB1BB1F0E177400452EA8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1BA1F0E177400452EA8 /* AppDelegate.m */; };
 		657FB1BE1F0E177400452EA8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1BD1F0E177400452EA8 /* ViewController.m */; };
 		657FB1C11F0E177400452EA8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1BF1F0E177400452EA8 /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 /* Begin PBXFileReference section */
 		652BA0631F0F11D000A692A9 /* despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = despacer.h; sourceTree = "<group>"; };
 		652BA0641F0F11D000A692A9 /* despacebenchmark.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = despacebenchmark.c; sourceTree = "<group>"; };
+		652BA0651F0F18BD00A692A9 /* despacebenchmark.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = despacebenchmark.h; sourceTree = "<group>"; };
 		657FB1B61F0E177400452EA8 /* SpacePruner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpacePruner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		657FB1B91F0E177400452EA8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		657FB1BA1F0E177400452EA8 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				652BA0631F0F11D000A692A9 /* despacer.h */,
+				652BA0651F0F18BD00A692A9 /* despacebenchmark.h */,
 				652BA0641F0F11D000A692A9 /* despacebenchmark.c */,
 				657FB1B91F0E177400452EA8 /* AppDelegate.h */,
 				657FB1BA1F0E177400452EA8 /* AppDelegate.m */,
@@ -148,6 +151,7 @@
 				657FB1BE1F0E177400452EA8 /* ViewController.m in Sources */,
 				657FB1C91F0E177400452EA8 /* main.m in Sources */,
 				657FB1BB1F0E177400452EA8 /* AppDelegate.m in Sources */,
+				652BA0661F0F199A00A692A9 /* despacebenchmark.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -278,6 +282,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 6NC7NZMXLP;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = SpacePruner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -293,6 +298,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 6NC7NZMXLP;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = SpacePruner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

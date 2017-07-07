@@ -6,7 +6,6 @@
 #include <string.h>
 #include "despacer.h"
 
-#if 0
 const char * nameofcycles = "ns";
 
 
@@ -152,14 +151,10 @@ size_t fillwithtext(char *buffer, size_t size) {
   return howmany;
 }
 
-
-int main(int argc, char ** argv) {
+void despace_benchmark(void) {
   const int N = 1024 * 32;
   int alignoffset = 0;
-  if(argc>1)  {
-    alignoffset = atoi(argv[1]);
-    printf("alignment offset = %d \n", alignoffset);
-  }
+
   char *origbuffer = malloc(N + alignoffset);
   char *origtmpbuffer = malloc(N + alignoffset);
   char *buffer = origbuffer + alignoffset;
@@ -174,10 +169,11 @@ int main(int argc, char ** argv) {
   printf("\n");
   BEST_TIME(despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+#if __ARM_NEON
   BEST_TIME(neon_despace(buffer, N), N - howmanywhite,
                   howmanywhite = fillwithtext(buffer, N), repeat, N);
+#endif // __ARM_NEON
   free(origbuffer);
   free(origtmpbuffer);
 }
-#endif
 
