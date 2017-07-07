@@ -16,6 +16,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		652BA0631F0F11D000A692A9 /* despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = despacer.h; sourceTree = "<group>"; };
+		652BA0641F0F11D000A692A9 /* despacebenchmark.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = despacebenchmark.c; sourceTree = "<group>"; };
 		657FB1B61F0E177400452EA8 /* SpacePruner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpacePruner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		657FB1B91F0E177400452EA8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		657FB1BA1F0E177400452EA8 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -58,6 +60,8 @@
 		657FB1B81F0E177400452EA8 /* SpacePruner */ = {
 			isa = PBXGroup;
 			children = (
+				652BA0631F0F11D000A692A9 /* despacer.h */,
+				652BA0641F0F11D000A692A9 /* despacebenchmark.c */,
 				657FB1B91F0E177400452EA8 /* AppDelegate.h */,
 				657FB1BA1F0E177400452EA8 /* AppDelegate.m */,
 				657FB1BC1F0E177400452EA8 /* ViewController.h */,
@@ -277,6 +281,7 @@
 				INFOPLIST_FILE = SpacePruner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LLVM_LTO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = net.derekledbetter.SpacePruner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -291,6 +296,7 @@
 				INFOPLIST_FILE = SpacePruner/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LLVM_LTO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = net.derekledbetter.SpacePruner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -316,6 +322,7 @@
 				657FB1CE1F0E177400452EA8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
