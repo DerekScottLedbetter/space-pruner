@@ -7,6 +7,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include "despacer.h"
+#include "interleaved_despacer.h"
 
 static inline uint64_t time_in_ns() {
   struct timeval tv;
@@ -100,6 +101,7 @@ void despace_benchmark(void) {
   BEST_TIME(despace);
 #if __ARM_NEON
   BEST_TIME(neon_despace);
+  BEST_TIME(neon_interleaved_despace);
 #endif // __ARM_NEON
 
   free(correctbuffer);
