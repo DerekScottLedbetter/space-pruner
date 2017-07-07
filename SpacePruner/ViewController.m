@@ -8,22 +8,70 @@
 
 #import "ViewController.h"
 
-@interface ViewController ()
+@interface ViewController () {
+    BOOL _currentlyRunning; // TODO: change to property
+}
+
+@property (nonatomic, weak) IBOutlet UIButton *button;
+@property (nonatomic, weak) IBOutlet UILabel *label;
 
 @end
 
 @implementation ViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    [self setUp];
+    return self;
 }
 
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super initWithCoder:aDecoder];
+    [self setUp];
+    return self;
+}
+
+- (void)setUp {
+    _currentlyRunning = NO;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self updateRunButton];
+}
+
+- (void)updateRunButton {
+    self.button.enabled = !_currentlyRunning;
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
+- (IBAction)runTest:(id)sender {
+    // TODO
+    if (_currentlyRunning) {
+        return;
+    }
+
+    _currentlyRunning = YES;
+    [self updateRunButton];
+    __weak ViewController *weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(void) {
+        // TODO
+        sleep(5);
+        NSString* message = @"Slept for 5 seconds.\n";
+
+        ViewController* self = weakSelf;
+        if (self) {
+            dispatch_async(dispatch_get_main_queue(), ^(void) {
+                self->_currentlyRunning = NO;
+                [self updateRunButton];
+                self.label.text = message;
+            });
+        }
+    });
+}
 
 @end
