@@ -4,40 +4,28 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <string.h>
+#include <time.h>
+#include <stdbool.h>
 #include "despacer.h"
 
-const char * nameofcycles = "ns";
-
-
-#include <time.h>
-
-#define RDTSC_START(cycles) \
-    do {                    \
-       struct timeval tv; \
-       gettimeofday(&tv, NULL); \
-       cycles =  (uint64_t)tv.tv_sec * 1000000000 + tv.tv_usec*1000; \
-    } while (0)
-
-#define RDTSC_FINAL(cycles) \
-    do {                    \
-        RDTSC_START(cycles);   \
-    } while (0)
-
-
+static inline uint64_t time_in_ns() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (uint64_t)tv.tv_sec * 1000000000 + (uint32_t)tv.tv_usec * 1000;
+}
 
 #define BEST_TIME(test)                                                        \
   do {                                                                         \
     fflush(NULL);                                                              \
     uint64_t min_diff = (uint64_t)-1;                                          \
-    int wrong_answer = 0;                                                      \
+    bool wrong_answer = false;                                                 \
     for (int i = 0; i < repeat; i++) {                                         \
-      uint64_t cycles_start, cycles_final, cycles_diff;                        \
       memcpy(tmpbuffer, buffer, N);                                            \
                                                                                \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
-      RDTSC_START(cycles_start);                                               \
+      const uint64_t cycles_start = time_in_ns();                              \
       size_t result_length = test(tmpbuffer, N);                               \
-      RDTSC_FINAL(cycles_final);                                               \
+      const uint64_t cycles_final = time_in_ns();                              \
                                                                                \
       if (0 && i == 0 && result_length <= N) {                                 \
         tmpbuffer[result_length] = 0;                                          \
@@ -45,14 +33,15 @@ const char * nameofcycles = "ns";
       }                                                                        \
       if (result_length != N - howmanywhite                                    \
             || memcmp(tmpbuffer, correctbuffer, result_length) != 0)           \
-        wrong_answer = 1;                                                      \
-      cycles_diff = (cycles_final - cycles_start);                             \
+        wrong_answer = true;                                                   \
+                                                                               \
+      const uint64_t cycles_diff = (cycles_final - cycles_start);              \
       if (cycles_diff < min_diff)                                              \
         min_diff = cycles_diff;                                                \
     }                                                                          \
     printf("%-40s: ", #test);                                                  \
-    float cycle_per_op = (min_diff) / (float)N;                                \
-    printf(" %.2f %s per operation", cycle_per_op, nameofcycles);              \
+    float cycle_per_op = (float)min_diff / (float)N;                           \
+    printf(" %.2f ns per operation", cycle_per_op);                            \
     if (wrong_answer)                                                          \
       printf(" [ERROR]");                                                      \
     printf("\n");                                                              \
@@ -93,7 +82,7 @@ void despace_benchmark(void) {
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
   char *correctbuffer = malloc(N + 1);
-  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
+  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(tmpbuffer)));
 
   int repeat = 100;
   size_t howmanywhite = fillwithtext(buffer, N);
