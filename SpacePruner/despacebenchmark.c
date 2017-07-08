@@ -75,7 +75,7 @@ size_t fillwithtext(char *buffer, size_t size) {
 
 void despace_benchmark(void) {
   const int N = 1024 * 32;
-  const int repeat = 100;
+  const int repeat = 10000;
   const int alignoffset = 0;
 
   // Add one in case we want to null-terminate.
@@ -103,6 +103,7 @@ void despace_benchmark(void) {
   BEST_TIME(neon_despace);
   BEST_TIME(neon_interleaved_despace);
 #endif // __ARM_NEON
+  printf("\n");
 
   free(correctbuffer);
   free(origbuffer);
