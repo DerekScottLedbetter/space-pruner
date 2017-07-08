@@ -67,9 +67,9 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
     uint8x8_t goodBits = vdup_n_u8(0);
     for (int i = 0; i != 8; ++i) {
       uint8x8_t good = vcgt_u8(characters[i], vdup_n_u8(space));
-      goodBits = vbsl_u8(vdup_n_u8(1), good, vshl_n_u8(goodBits, 1));
+      goodBits = vbsl_u8(vdup_n_u8(0x80U >> i), good, goodBits);
     }
-    const uint8x8_t goodCount = vcnt_u8(goodBits);
+    uint8x8_t goodCount = vcnt_u8(goodBits);
 
     uint8x8_t indices[8];
     for (int i = 0; i != 8; ++i) {
@@ -79,22 +79,13 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
     }
     transpose_8x8(indices);
 
-    #define EXTRACT_AND_STORE(i) \
-    { \
-      uint8x8_t originalCharacters = vld1_u8(source + 8 * i); \
-      uint8x8_t pickedCharacters = vtbl1_u8(originalCharacters, indices[i]); \
-      vst1_u8(dest, pickedCharacters); \
-      dest += vget_lane_u8(goodCount, i); \
+    for (int i = 0; i != 8; ++i) {
+      uint8x8_t originalCharacters = vld1_u8(source + 8 * i);
+      uint8x8_t pickedCharacters = vtbl1_u8(originalCharacters, indices[i]);
+      vst1_u8(dest, pickedCharacters);
+      dest += vget_lane_u8(goodCount, 0);
+      goodCount = vext_u8(goodCount, goodCount, 1);
     }
-    EXTRACT_AND_STORE(0);
-    EXTRACT_AND_STORE(1);
-    EXTRACT_AND_STORE(2);
-    EXTRACT_AND_STORE(3);
-    EXTRACT_AND_STORE(4);
-    EXTRACT_AND_STORE(5);
-    EXTRACT_AND_STORE(6);
-    EXTRACT_AND_STORE(7);
-    #undef EXTRACT_AND_STORE
 
     source += blockSize;
   }
