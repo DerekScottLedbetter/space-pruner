@@ -59,10 +59,35 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
   while (sourceEnd - source >= blockSize) {
     uint8x8_t characters[8];
 
-    for (int i = 0; i != 8; ++i) {
-      characters[i] = vld1_u8(source + 8 * i);
+    /*
+     vld4_u8 0–3, 4–7:
+     [ 00, 04, 08, 0C, 10, 14, 18, 1C ]
+     [ 01, 05, 09, 0D, 11, 15, 19, 1D ]
+     [ 02, 06, 0A, 0E, 12, 16, 1A, 1E ]
+     [ 03, 07, 0B, 0F, 13, 17, 1B, 1F ]
+     [ 20, 24, 28, 2C, 30, 34, 38, 3C ]
+     [ 21, 25, 29, 2D, 31, 35, 39, 3D ]
+     [ 22, 26, 2A, 2E, 32, 36, 3A, 3E ]
+     [ 23, 27, 2B, 2F, 33, 37, 3B, 3F ]
+
+     vuzp_u8 0–4, 1–5, 2–6, 3–7:
+     0 [ 00, 08, 10, 18, 20, 28, 30, 38 ]
+     1 [ 01, 09, 11, 19, 21, 29, 31, 39 ]
+     2 [ 02, 0A, 12, 1A, 22, 2A, 32, 3A ]
+     3 [ 03, 0B, 13, 1B, 23, 2B, 33, 3B ]
+     4 [ 04, 0C, 14, 1C, 24, 2C, 34, 3C ]
+     5 [ 05, 0D, 15, 1D, 25, 2D, 35, 3D ]
+     6 [ 06, 0E, 16, 1E, 26, 2E, 36, 3E ]
+     7 [ 07, 0F, 17, 1F, 27, 2F, 37, 3F ]
+     */
+
+    uint8x8x4_t characters0 = vld4_u8(source);
+    uint8x8x4_t characters1 = vld4_u8(source + 8 * 4);
+    for (int i = 0; i != 4; ++i) {
+      uint8x8x2_t unzipped = vuzp_u8(characters0.val[i], characters1.val[i]);
+      characters[i + 0] = unzipped.val[0];
+      characters[i + 4] = unzipped.val[1];
     }
-    transpose_8x8(characters);
 
     uint8x8_t goodBits = vdup_n_u8(0);
     for (int i = 0; i != 8; ++i) {
