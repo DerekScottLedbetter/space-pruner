@@ -11,6 +11,7 @@
 #include <ConditionalMacros.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #if __ARM_NEON
 #include <arm_neon.h>
@@ -48,6 +49,8 @@ static inline void transpose_8x8(uint8x8_t vectors[8]) {
   transpose_in_place_32(&vectors[3], &vectors[7]);
 }
 
+#define PRINT_8x8(var) ((void)printf("%s = %02X %02X %02X %02X  %02X %02X %02X %02X\n", #var, var[0], var[1], var[2], var[3], var[4], var[5], var[6], var[7]))
+
 size_t neon_interleaved_despace(char *bytes, size_t howmany) {
   const size_t blockSize = 8 * 8;
   const uint8_t space = 32;
@@ -57,43 +60,45 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
   const uint8_t* sourceEnd = source + howmany;
 
   while (sourceEnd - source >= blockSize) {
-    uint8x8_t characters[8];
-
     /*
-     vld4_u8 0–3, 4–7:
-     [ 00, 04, 08, 0C, 10, 14, 18, 1C ]
-     [ 01, 05, 09, 0D, 11, 15, 19, 1D ]
-     [ 02, 06, 0A, 0E, 12, 16, 1A, 1E ]
-     [ 03, 07, 0B, 0F, 13, 17, 1B, 1F ]
-     [ 20, 24, 28, 2C, 30, 34, 38, 3C ]
-     [ 21, 25, 29, 2D, 31, 35, 39, 3D ]
-     [ 22, 26, 2A, 2E, 32, 36, 3A, 3E ]
-     [ 23, 27, 2B, 2F, 33, 37, 3B, 3F ]
+     Represent indices in octal.
 
-     vuzp_u8 0–4, 1–5, 2–6, 3–7:
-     0 [ 00, 08, 10, 18, 20, 28, 30, 38 ]
-     1 [ 01, 09, 11, 19, 21, 29, 31, 39 ]
-     2 [ 02, 0A, 12, 1A, 22, 2A, 32, 3A ]
-     3 [ 03, 0B, 13, 1B, 23, 2B, 33, 3B ]
-     4 [ 04, 0C, 14, 1C, 24, 2C, 34, 3C ]
-     5 [ 05, 0D, 15, 1D, 25, 2D, 35, 3D ]
-     6 [ 06, 0E, 16, 1E, 26, 2E, 36, 3E ]
-     7 [ 07, 0F, 17, 1F, 27, 2F, 37, 3F ]
+     vld4q_u8 gives 4 uint8x16_t
+     [ 00 04 10 14 … ]
+     [ 01 05 11 15 … ]
+     [ 02 06 12 16 … ]
+     [ 03 07 13 17 … ]
+
+     Test > 32, then AND with these masks, repeated eight times:
+     [ b0000_1000 b1000_0000 … ]
+     [ b0000_0100 b0100_0000 … ]
+     [ b0000_0010 b0010_0000 … ]
+     [ b0000_1001 b0001_0000 … ]
+
+     Then ORR these together to get a single uint8x16_t:
+     [ 0000 00–03, 04–07 0000, 0000 10–13, 14–17 0000, … ]
+
+     Reinterpret as uint16x8_t and swap bytes:
+     [ 0000 00–07 0000, 0000 10–17 0000, … ]
+
+     Shift right by 4 and narrow:
+     [ 00–07, 10–17, 20–27, 30–37, 40–47, 50–57, 60–67, 70–77 ]
      */
 
-    uint8x8x4_t characters0 = vld4_u8(source);
-    uint8x8x4_t characters1 = vld4_u8(source + 8 * 4);
-    for (int i = 0; i != 4; ++i) {
-      uint8x8x2_t unzipped = vuzp_u8(characters0.val[i], characters1.val[i]);
-      characters[i + 0] = unzipped.val[0];
-      characters[i + 4] = unzipped.val[1];
+    uint8x16x4_t characters = vld4q_u8(source);
+
+    const uint16x8x4_t masks = {
+      vdupq_n_u16(0x8008), vdupq_n_u16(0x4004), vdupq_n_u16(0x2002), vdupq_n_u16(0x1001)
+    };
+
+    uint16x8_t goodBitsQuad = vdupq_n_u16(0);
+    for (int j = 0; j != 4; ++j) {
+      uint8x16_t good = vcgtq_u8(characters.val[j], vdupq_n_u8(space));
+      goodBitsQuad = vorrq_u16(goodBitsQuad, vandq_u16(masks.val[j], vreinterpretq_u16_u8(good)));
     }
 
-    uint8x8_t goodBits = vdup_n_u8(0);
-    for (int i = 0; i != 8; ++i) {
-      uint8x8_t good = vcgt_u8(characters[i], vdup_n_u8(space));
-      goodBits = vbsl_u8(vdup_n_u8(0x80U >> i), good, goodBits);
-    }
+    uint8x8_t goodBits = vshrn_n_u16(vreinterpretq_u16_u8(vrev16q_u8(vreinterpretq_u8_u16(goodBitsQuad))), 4);
+
     uint8x8_t goodCount = vcnt_u8(goodBits);
 
     uint8x8_t indices[8];

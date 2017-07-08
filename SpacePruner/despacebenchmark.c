@@ -73,9 +73,16 @@ size_t fillwithtext(char *buffer, size_t size) {
   return howmany;
 }
 
+// #define SHORT_TEST
+
 void despace_benchmark(void) {
+#ifdef SHORT_TEST
+  const int N = 64;
+  const int repeat = 1;
+#else
   const int N = 1024 * 32;
   const int repeat = 10000;
+#endif
   const int alignoffset = 0;
 
   // Add one in case we want to null-terminate.
@@ -86,7 +93,13 @@ void despace_benchmark(void) {
   char *correctbuffer = malloc(N + 1);
   printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(tmpbuffer)));
 
+#ifdef SHORT_TEST
+  static const char testData[N] = "The quick brown fox jumped over the lazy dog. Yada yada yada.   ";
+  size_t howmanywhite = 14;
+  memcpy(buffer, testData, N);
+#else
   size_t howmanywhite = fillwithtext(buffer, N);
+#endif
 
   int j = 0;
   for (int i = 0; i < N; ++i) {
