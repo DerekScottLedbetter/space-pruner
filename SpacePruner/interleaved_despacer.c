@@ -114,17 +114,22 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
     }
     transpose_q_8x8(indices);
 
-    for (int i = 0; i != 2; ++i) {
-      uint8x8_t goodCount_i = i ? vget_high_u8(goodCount) : vget_low_u8(goodCount);
-      for (int j = 0; j != 8; ++j) {
-        uint8x8_t originalCharacters = vld1_u8(source + 8 * (8 * i + j));
-        uint8x8_t indices_ij = i ? vget_high_u8(indices[j]) : vget_low_u8(indices[j]);
-        uint8x8_t pickedCharacters = vtbl1_u8(originalCharacters, indices_ij);
-        vst1_u8(dest, pickedCharacters);
-        dest += vget_lane_u8(goodCount_i, 0);
-        goodCount_i = vext_u8(goodCount_i, goodCount_i, 1);
-      }
+#define STORE_8_DOUBLEWORDS(i, side)                                            \
+    {                                                                           \
+      uint8x8_t goodCount_i = vget_##side##_u8(goodCount);                      \
+      for (int j = 0; j != 8; ++j) {                                            \
+        uint8x8_t originalCharacters = vld1_u8(source + 8 * (8 * i + j));       \
+        uint8x8_t indices_ij = vget_##side##_u8(indices[j]);                    \
+        uint8x8_t pickedCharacters = vtbl1_u8(originalCharacters, indices_ij);  \
+        vst1_u8(dest, pickedCharacters);                                        \
+        dest += vget_lane_u8(goodCount_i, 0);                                   \
+        goodCount_i = vext_u8(goodCount_i, goodCount_i, 1);                     \
+      }                                                                         \
     }
+
+    STORE_8_DOUBLEWORDS(0, low)
+    STORE_8_DOUBLEWORDS(1, high)
+#undef STORE_8_DOUBLEWORDS
 
     source += blockSize;
   }
