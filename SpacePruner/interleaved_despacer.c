@@ -70,15 +70,15 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
      [ 03 07 13 17 … ]
 
      Test > 32, then AND with these masks, repeated eight times:
-     [ b0000_1000 b1000_0000 … ]
-     [ b0000_0100 b0100_0000 … ]
+     [ b0000_0001 b0001_0000 … ]
      [ b0000_0010 b0010_0000 … ]
-     [ b0000_1001 b0001_0000 … ]
+     [ b0000_0100 b0100_0000 … ]
+     [ b0000_1000 b1000_0000 … ]
 
      Then ORR these together to get a single uint8x16_t:
-     [ 0000 00–03, 04–07 0000, 0000 10–13, 14–17 0000, … ]
+     [ 0000 03–00, 07–04 0000, 0000 13–10, 17–14 0000, … ]
 
-     Reinterpret as uint16x8_t and swap bytes:
+     Reinterpret as uint16x8_t:
      [ 0000 00–07 0000, 0000 10–17 0000, … ]
 
      Shift right by 4 and narrow:
@@ -90,7 +90,7 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
       uint8x16x4_t characters = vld4q_u8(source + 8 * 8 * i);
 
       const uint16x8x4_t masks = {
-        vdupq_n_u16(0x8008), vdupq_n_u16(0x4004), vdupq_n_u16(0x2002), vdupq_n_u16(0x1001)
+        vdupq_n_u16(0x0110), vdupq_n_u16(0x0220), vdupq_n_u16(0x0440), vdupq_n_u16(0x0880)
       };
 
       uint16x8_t goodBitsQuad = vdupq_n_u16(0);
@@ -99,7 +99,7 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
         goodBitsQuad = vorrq_u16(goodBitsQuad, vandq_u16(masks.val[j], vreinterpretq_u16_u8(good)));
       }
 
-      goodBits_doubles[i] = vshrn_n_u16(vreinterpretq_u16_u8(vrev16q_u8(vreinterpretq_u8_u16(goodBitsQuad))), 4);
+      goodBits_doubles[i] = vshrn_n_u16(goodBitsQuad, 4);
     }
 
     uint8x16_t goodBits = vcombine_u8(goodBits_doubles[0], goodBits_doubles[1]);
@@ -108,9 +108,16 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
 
     uint8x16_t indices[8];
     for (int i = 0; i != 8; ++i) {
-      uint8x16_t indicesOfSetBits = vclzq_u8(goodBits);
-      indices[i] = indicesOfSetBits;
-      goodBits = vbicq_u8(goodBits, vshlq_u8(vdupq_n_u8(0x80), vnegq_s8(vreinterpretq_s8_u8(indicesOfSetBits))));
+      /*
+      Suppose that goodBits[i] ends in a 1 followed by k 0's.
+      Then subtracting one will change those to a 1 followed by k 1's, leaving the top bits the same.
+      ANDing will clear the lowest set bit.
+      ANDing minus one with the complemented original will give a number that ends in k 1's, 
+      and zero elsewhere.
+      */
+      uint8x16_t minusOne = vsubq_u8(goodBits, vdupq_n_u8(1));
+      indices[i] = vcntq_u8(vbicq_u8(minusOne, goodBits));
+      goodBits = vandq_u8(goodBits, minusOne);
     }
     transpose_q_8x8(indices);
 
