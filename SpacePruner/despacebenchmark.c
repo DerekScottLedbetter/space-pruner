@@ -17,24 +17,14 @@ static inline uint64_t time_in_ns() {
 
 #define BEST_TIME(test)                                                        \
   do {                                                                         \
-    fflush(NULL);                                                              \
     uint64_t min_diff = (uint64_t)-1;                                          \
-    bool wrong_answer = false;                                                 \
     for (int i = 0; i < repeat; i++) {                                         \
-      memcpy(tmpbuffer, buffer, N);                                            \
+      fillwithtext(buffer, N);                                                 \
                                                                                \
       __asm volatile("" ::: /* pretend to clobber */ "memory");                \
       const uint64_t cycles_start = time_in_ns();                              \
-      size_t result_length = test(tmpbuffer, N);                               \
+      test(buffer, N);                                                         \
       const uint64_t cycles_final = time_in_ns();                              \
-                                                                               \
-      if (false && i == 0 && result_length <= N) {                             \
-        tmpbuffer[result_length] = 0;                                          \
-        printf("\"%s\"\n", tmpbuffer);                                         \
-      }                                                                        \
-      if (result_length != N - howmanywhite                                    \
-            || memcmp(tmpbuffer, correctbuffer, result_length) != 0)           \
-        wrong_answer = true;                                                   \
                                                                                \
       const uint64_t cycles_diff = (cycles_final - cycles_start);              \
       if (cycles_diff < min_diff)                                              \
@@ -42,10 +32,7 @@ static inline uint64_t time_in_ns() {
     }                                                                          \
     printf("%-40s: ", #test);                                                  \
     float cycle_per_op = (float)min_diff / (float)N;                           \
-    printf(" %.2f ns per operation", cycle_per_op);                            \
-    if (wrong_answer)                                                          \
-      printf(" [ERROR]");                                                      \
-    printf("\n");                                                              \
+    printf(" %.2f ns per operation\n", cycle_per_op);                          \
     fflush(NULL);                                                              \
   } while (0)
 
@@ -73,16 +60,27 @@ size_t fillwithtext(char *buffer, size_t size) {
   return howmany;
 }
 
-// #define SHORT_TEST
+typedef size_t (*despace_function_ptr)(char *bytes, size_t howmany);
+
+#define FUNCTION_AND_NAME(func) { &func, #func }
+
+struct FunctionAndName {
+  despace_function_ptr ptr;
+  const char* name;
+};
+
+const struct FunctionAndName functionsToTest[] = {
+  FUNCTION_AND_NAME(despace),
+#if __ARM_NEON
+  FUNCTION_AND_NAME(neon_despace),
+  FUNCTION_AND_NAME(neon_interleaved_despace),
+#endif
+};
+const size_t functionsToTestCount = sizeof(functionsToTest) / sizeof(functionsToTest[0]);
 
 void despace_benchmark(void) {
-#ifdef SHORT_TEST
-  const int N = 64;
-  const int repeat = 1;
-#else
   const int N = 1024 * 32;
-  const int repeat = 10000;
-#endif
+  const int repeat = 100;
   const int alignoffset = 0;
 
   // Add one in case we want to null-terminate.
@@ -91,24 +89,50 @@ void despace_benchmark(void) {
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
   char *correctbuffer = malloc(N + 1);
-  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(tmpbuffer)));
+  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
 
-#ifdef SHORT_TEST
-  static const char testData[N] = "The quick brown fox jumped over the lazy dog. Yada yada yada.   ";
-  size_t howmanywhite = 14;
-  memcpy(buffer, testData, N);
-#else
-  size_t howmanywhite = fillwithtext(buffer, N);
-#endif
+  static const size_t testSizes[] = { 0, 1, 2, 3, 4, 7, 8, 9, 13, 16, 17, 61, 64, 67,
+      100, 123, 1000, 10000, N };
+  const size_t testSizesCount = sizeof(testSizes) / sizeof(testSizes[0]);
+  bool failedTests[functionsToTestCount] = {};
 
-  int j = 0;
-  for (int i = 0; i < N; ++i) {
-    char c = buffer[i];
-    if (c > 32) {
-      correctbuffer[j++] = c;
+  for (size_t i = 0; i != testSizesCount; ++i) {
+    const size_t sourceCount = testSizes[i];
+    assert(sourceCount <= N);
+
+    const size_t howmanywhite = fillwithtext(buffer, sourceCount);
+    const size_t correctResultSize = sourceCount - howmanywhite;
+
+    int j = 0;
+    for (int i = 0; i < sourceCount; ++i) {
+      char c = buffer[i];
+      if (c > 32) {
+        correctbuffer[j++] = c;
+      }
+    }
+    assert(j == correctResultSize);
+
+    for (size_t t = 0; t != functionsToTestCount; ++t) {
+      if (failedTests[t]) {
+        continue;
+      }
+
+      memcpy(tmpbuffer, buffer, sourceCount);
+      size_t resultSize = (*functionsToTest[t].ptr)(tmpbuffer, sourceCount);
+
+      if (resultSize != correctResultSize
+          || memcmp(tmpbuffer, correctbuffer, resultSize) != 0) {
+        failedTests[t] = true;
+      }
     }
   }
-  assert(j == N - howmanywhite);
+
+  for (size_t t = 0; t != functionsToTestCount; ++t) {
+    printf("%-40s: %s\n", functionsToTest[t].name, failedTests[t] ? "FAILURE" : "OK");
+  }
+  fflush(NULL);
+
+  fillwithtext(buffer, N);
 
   printf("\n");
   BEST_TIME(despace);
