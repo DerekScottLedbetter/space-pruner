@@ -132,8 +132,6 @@ void despace_benchmark(void) {
   }
   fflush(NULL);
 
-  fillwithtext(buffer, N);
-
   printf("\n");
   BEST_TIME(despace);
 #if __ARM_NEON
