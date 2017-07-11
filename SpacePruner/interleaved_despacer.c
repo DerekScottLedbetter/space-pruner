@@ -75,34 +75,36 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
      [ b0000_0100 b0100_0000 … ]
      [ b0000_1000 b1000_0000 … ]
 
-     Then ORR these together to get a single uint8x16_t:
+     Then OR these together to get a single uint8x16_t:
      [ 0000 03–00, 07–04 0000, 0000 13–10, 17–14 0000, … ]
 
-     Reinterpret as uint16x8_t:
-     [ 0000 00–07 0000, 0000 10–17 0000, … ]
-
-     Shift right by 4 and narrow:
+     Unzip and OR together:
      [ 00–07, 10–17, 20–27, 30–37, 40–47, 50–57, 60–67, 70–77 ]
      */
-
-    uint8x8_t goodBits_doubles[2];
+    
+    uint8x16_t goodBitsZipped[2];
     for (int i = 0; i != 2; ++i) {
-      uint8x16x4_t characters = vld4q_u8(source + 8 * 8 * i);
-
-      const uint16x8x4_t masks = {
-        vdupq_n_u16(0x0110), vdupq_n_u16(0x0220), vdupq_n_u16(0x0440), vdupq_n_u16(0x0880)
+      const uint8x16_t mask0 = vreinterpretq_u8_u16(vdupq_n_u16(0x1001));
+      const uint8x16x4_t masks = {
+        mask0,                 // 0x01  0x10
+        vshlq_n_u8(mask0, 1),  // 0x02  0x20
+        vshlq_n_u8(mask0, 2),  // 0x04  0x40
+        vshlq_n_u8(mask0, 3),  // 0x08  0x80
       };
 
-      uint16x8_t goodBitsQuad = vdupq_n_u16(0);
+      uint8x16x4_t characters = vld4q_u8(source + 8 * 8 * i);
+
+      uint8x16_t goodBits_i = vdupq_n_u8(0);
       for (int j = 0; j != 4; ++j) {
         uint8x16_t good = vcgtq_u8(characters.val[j], vdupq_n_u8(space));
-        goodBitsQuad = vorrq_u16(goodBitsQuad, vandq_u16(masks.val[j], vreinterpretq_u16_u8(good)));
+        goodBits_i = vorrq_u8(goodBits_i, vandq_u8(masks.val[j], good));
       }
 
-      goodBits_doubles[i] = vshrn_n_u16(goodBitsQuad, 4);
+      goodBitsZipped[i] = goodBits_i;
     }
 
-    uint8x16_t goodBits = vcombine_u8(goodBits_doubles[0], goodBits_doubles[1]);
+    uint8x16x2_t unzipped = vuzpq_u8(goodBitsZipped[0], goodBitsZipped[1]);
+    uint8x16_t goodBits = vorrq_u8(unzipped.val[0], unzipped.val[1]);
 
     uint8x16_t goodCount = vcntq_u8(goodBits);
 
