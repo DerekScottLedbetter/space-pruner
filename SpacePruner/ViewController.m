@@ -62,7 +62,7 @@
     __weak ViewController *weakSelf = self;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(void) {
         // TODO: print results to screen.
-        despace_benchmark();
+        despace_benchmark(stdout);
         NSString* message = @"Printed benchmark results to log.\n";
 
         ViewController* self = weakSelf;

@@ -30,10 +30,10 @@ static inline uint64_t time_in_ns() {
       if (cycles_diff < min_diff)                                              \
         min_diff = cycles_diff;                                                \
     }                                                                          \
-    printf("%-40s: ", #test);                                                  \
+    fprintf(stream, "%-40s: ", #test);                                         \
     float cycle_per_op = (float)min_diff / (float)N;                           \
-    printf(" %.2f ns per operation\n", cycle_per_op);                          \
-    fflush(NULL);                                                              \
+    fprintf(stream, " %.2f ns per operation\n", cycle_per_op);                 \
+    fflush(stream);                                                            \
   } while (0)
 
 
@@ -78,7 +78,7 @@ const struct FunctionAndName functionsToTest[] = {
 };
 const size_t functionsToTestCount = sizeof(functionsToTest) / sizeof(functionsToTest[0]);
 
-void despace_benchmark(void) {
+void despace_benchmark(FILE* stream) {
   const int N = 1024 * 32;
   const int repeat = 100;
   const int alignoffset = 0;
@@ -89,7 +89,7 @@ void despace_benchmark(void) {
   char *buffer = origbuffer + alignoffset;
   char *tmpbuffer = origtmpbuffer + alignoffset;
   char *correctbuffer = malloc(N + 1);
-  printf("pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
+  fprintf(stream, "pointer alignment = %d bytes \n", 1 << __builtin_ctzll((uintptr_t)(const void *)(buffer)));
 
   static const size_t testSizes[] = { 0, 1, 2, 3, 4, 7, 8, 9, 13, 16, 17, 61, 64, 67,
       100, 123, 1000, 10000, N };
@@ -128,17 +128,17 @@ void despace_benchmark(void) {
   }
 
   for (size_t t = 0; t != functionsToTestCount; ++t) {
-    printf("%-40s: %s\n", functionsToTest[t].name, failedTests[t] ? "FAILURE" : "OK");
+    fprintf(stream, "%-40s: %s\n", functionsToTest[t].name, failedTests[t] ? "FAILURE" : "OK");
   }
-  fflush(NULL);
+  fflush(stream);
 
-  printf("\n");
+  fprintf(stream, "\n");
   BEST_TIME(despace);
 #if __ARM_NEON
   BEST_TIME(neon_despace);
   BEST_TIME(neon_interleaved_despace);
 #endif // __ARM_NEON
-  printf("\n");
+  fprintf(stream, "\n");
 
   free(correctbuffer);
   free(origbuffer);

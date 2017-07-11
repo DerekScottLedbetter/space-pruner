@@ -9,6 +9,8 @@
 #ifndef despacebenchmark_h
 #define despacebenchmark_h
 
-void despace_benchmark(void);
+#include <stdio.h>
+
+void despace_benchmark(FILE* stream);
 
 #endif /* despacebenchmark_h */
