@@ -111,7 +111,7 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
     for (int i = 0; i != 8; ++i) {
       /*
       Suppose that goodBits[i] ends in a 1 followed by k 0's.
-      Then subtracting one will change those to a 1 followed by k 1's, leaving the top bits the same.
+      Then subtracting one will change those to a 0 followed by k 1's, leaving the top bits the same.
       ANDing will clear the lowest set bit.
       ANDing minus one with the complemented original will give a number that ends in k 1's, 
       and zero elsewhere.
