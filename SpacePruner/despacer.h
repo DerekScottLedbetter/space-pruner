@@ -59,7 +59,7 @@ static inline uint16_t is_not_zero(uint8x16_t v) {
 #define PRINT_8x16(var) ((void)printf("%s = %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X\n", #var, var[0], var[1], var[2], var[3], var[4], var[5], var[6], var[7], var[8], var[9], var[10], var[11], var[12], var[13], var[14], var[15]))
 
 static inline size_t neon_despace(char *bytes, size_t howmany) {
-   size_t i = 0, pos = 0;
+  size_t i = 0, pos = 0;
   const size_t chunk_size = 16 * 4 * 1;
   uint8x16_t justone = vdupq_n_u8(1);
   for (; i + chunk_size <= howmany; /*i += chunk_size*/) {
@@ -85,7 +85,7 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
       vst1q_u8((uint8_t *)bytes + pos,vecbytes.val[0]);
       pos += 16;
       i += 16;
-     } else {
+    } else {
       for (int k = 0; k < 16; k++) {
         bytes[pos] = bytes[i++];
         pos += w0[k];
@@ -95,8 +95,8 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
       vst1q_u8((uint8_t *)bytes + pos,vecbytes.val[1]);
       pos += 16;
       i += 16;
-     } else {
-       for (int k = 0; k < 16; k++) {
+    } else {
+      for (int k = 0; k < 16; k++) {
         bytes[pos] = bytes[i++];
         pos += w1[k];
       }
@@ -105,8 +105,8 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
       vst1q_u8((uint8_t *)bytes + pos,vecbytes.val[2]);
       pos += 16;
       i += 16;
-     } else {
-       for (int k = 0; k < 16; k++) {
+    } else {
+      for (int k = 0; k < 16; k++) {
         bytes[pos] = bytes[i++];
         pos += w2[k];
       }
@@ -115,8 +115,8 @@ static inline size_t neon_despace(char *bytes, size_t howmany) {
       vst1q_u8((uint8_t *)bytes + pos,vecbytes.val[3]);
       pos += 16;
       i += 16;
-     } else {
-       for (int k = 0; k < 16; k++) {
+    } else {
+      for (int k = 0; k < 16; k++) {
         bytes[pos] = bytes[i++];
         pos += w3[k];
       }
