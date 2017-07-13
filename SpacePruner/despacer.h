@@ -56,8 +56,6 @@ static inline uint16_t is_not_zero(uint8x16_t v) {
 * credit: Cyril Lashkevich
 */
 
-#define PRINT_8x16(var) ((void)printf("%s = %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X  %02X %02X %02X %02X\n", #var, var[0], var[1], var[2], var[3], var[4], var[5], var[6], var[7], var[8], var[9], var[10], var[11], var[12], var[13], var[14], var[15]))
-
 static inline size_t neon_despace(char *bytes, size_t howmany) {
   size_t i = 0, pos = 0;
   const size_t chunk_size = 16 * 4 * 1;
