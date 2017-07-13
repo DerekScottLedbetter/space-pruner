@@ -76,6 +76,10 @@ const struct FunctionAndName functionsToTest[] = {
   FUNCTION_AND_NAME(despace),
 #if __ARM_NEON
   FUNCTION_AND_NAME(neon_despace),
+  FUNCTION_AND_NAME(neon_despace_branchless),
+#if defined(__aarch64__)
+  FUNCTION_AND_NAME(neontbl_despace),
+#endif
   FUNCTION_AND_NAME(neon_interleaved_despace),
 #endif
 };
@@ -139,6 +143,10 @@ void despace_benchmark(FILE* stream) {
   BEST_TIME(despace);
 #if __ARM_NEON
   BEST_TIME(neon_despace);
+  BEST_TIME(neon_despace_branchless);
+#if defined(__aarch64__)
+  BEST_TIME(neontbl_despace);
+#endif
   BEST_TIME(neon_interleaved_despace);
 #endif // __ARM_NEON
   fprintf(stream, "\n");

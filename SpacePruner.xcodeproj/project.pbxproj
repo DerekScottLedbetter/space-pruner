@@ -33,6 +33,7 @@
 		657FB1C71F0E177400452EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		657FB1C81F0E177400452EA8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		65F28EAB1F17150200F80F65 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
+		65F28EAD1F1823A500F80F65 /* bigtable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bigtable.h; sourceTree = "<group>"; };
 		65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = interleaved_despacer.c; sourceTree = "<group>"; };
 		65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interleaved_despacer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -70,6 +71,7 @@
 			children = (
 				65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */,
 				65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */,
+				65F28EAD1F1823A500F80F65 /* bigtable.h */,
 				652BA0631F0F11D000A692A9 /* despacer.h */,
 				652BA0651F0F18BD00A692A9 /* despacebenchmark.h */,
 				652BA0641F0F11D000A692A9 /* despacebenchmark.c */,
