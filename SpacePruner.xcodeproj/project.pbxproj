@@ -14,6 +14,7 @@
 		657FB1C31F0E177400452EA8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1C21F0E177400452EA8 /* Assets.xcassets */; };
 		657FB1C61F0E177400452EA8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1C41F0E177400452EA8 /* LaunchScreen.storyboard */; };
 		657FB1C91F0E177400452EA8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1C81F0E177400452EA8 /* main.m */; };
+		65F28EAC1F17150200F80F65 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 65F28EAB1F17150200F80F65 /* README.txt */; };
 		65F8A5EF1F103A7900D3D221 /* interleaved_despacer.c in Sources */ = {isa = PBXBuildFile; fileRef = 65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */; };
 /* End PBXBuildFile section */
 
@@ -31,6 +32,7 @@
 		657FB1C51F0E177400452EA8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		657FB1C71F0E177400452EA8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		657FB1C81F0E177400452EA8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		65F28EAB1F17150200F80F65 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 		65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = interleaved_despacer.c; sourceTree = "<group>"; };
 		65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = interleaved_despacer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -49,6 +51,7 @@
 		657FB1AD1F0E177300452EA8 = {
 			isa = PBXGroup;
 			children = (
+				65F28EAB1F17150200F80F65 /* README.txt */,
 				657FB1B81F0E177400452EA8 /* SpacePruner */,
 				657FB1B71F0E177400452EA8 /* Products */,
 			);
@@ -142,6 +145,7 @@
 			files = (
 				657FB1C61F0E177400452EA8 /* LaunchScreen.storyboard in Resources */,
 				657FB1C31F0E177400452EA8 /* Assets.xcassets in Resources */,
+				65F28EAC1F17150200F80F65 /* README.txt in Resources */,
 				657FB1C11F0E177400452EA8 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -233,7 +237,7 @@
 				LLVM_LTO = YES;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				SDKROOT = iphoneos10.3;
 			};
 			name = Debug;
 		};
@@ -281,7 +285,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LLVM_LTO = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				SDKROOT = iphoneos;
+				SDKROOT = iphoneos10.3;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

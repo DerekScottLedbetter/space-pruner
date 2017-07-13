@@ -1,4 +1,6 @@
 // gcc -std=c99 -O3 -o despacebenchmark despacebenchmark.c
+// Originally written by Daniel Lemire.
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

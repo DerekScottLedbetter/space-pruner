@@ -1,3 +1,5 @@
+// Originally written by Daniel Lemire.
+
 #ifndef DESPACER_H
 #define DESPACER_H
 #include <stddef.h>

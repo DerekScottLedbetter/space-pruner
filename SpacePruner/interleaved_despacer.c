@@ -3,7 +3,6 @@
 //  SpacePruner
 //
 //  Created by Derek Ledbetter on 2017-07-07.
-//  Copyright © 2017 Derek Ledbetter. All rights reserved.
 //
 
 #include "interleaved_despacer.h"
