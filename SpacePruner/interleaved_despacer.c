@@ -15,39 +15,6 @@
 #if __ARM_NEON
 #include <arm_neon.h>
 
-static inline void transpose_in_place_q_8(uint8x16_t* restrict v0, uint8x16_t* restrict v1) {
-  uint8x16x2_t result = vtrnq_u8(*v0, *v1);
-  *v0 = result.val[0];
-  *v1 = result.val[1];
-}
-
-static inline void transpose_in_place_q_16(uint8x16_t* restrict v0, uint8x16_t* restrict v1) {
-  uint16x8x2_t result = vtrnq_u16(vreinterpretq_u16_u8(*v0), vreinterpretq_u16_u8(*v1));
-  *v0 = vreinterpretq_u8_u16(result.val[0]);
-  *v1 = vreinterpretq_u8_u16(result.val[1]);
-}
-
-static inline void transpose_in_place_q_32(uint8x16_t* restrict v0, uint8x16_t* restrict v1) {
-  uint32x4x2_t result = vtrnq_u32(vreinterpretq_u32_u8(*v0), vreinterpretq_u32_u8(*v1));
-  *v0 = vreinterpretq_u8_u32(result.val[0]);
-  *v1 = vreinterpretq_u8_u32(result.val[1]);
-}
-
-static inline void transpose_q_8x8(uint8x16_t vectors[8]) {
-  transpose_in_place_q_8(&vectors[0], &vectors[1]);
-  transpose_in_place_q_8(&vectors[2], &vectors[3]);
-  transpose_in_place_q_8(&vectors[4], &vectors[5]);
-  transpose_in_place_q_8(&vectors[6], &vectors[7]);
-  transpose_in_place_q_16(&vectors[0], &vectors[2]);
-  transpose_in_place_q_16(&vectors[1], &vectors[3]);
-  transpose_in_place_q_16(&vectors[4], &vectors[6]);
-  transpose_in_place_q_16(&vectors[5], &vectors[7]);
-  transpose_in_place_q_32(&vectors[0], &vectors[4]);
-  transpose_in_place_q_32(&vectors[1], &vectors[5]);
-  transpose_in_place_q_32(&vectors[2], &vectors[6]);
-  transpose_in_place_q_32(&vectors[3], &vectors[7]);
-}
-
 #define PRINT_8x8(var) ((void)printf("%s = %02X %02X %02X %02X  %02X %02X %02X %02X\n", #var, var[0], var[1], var[2], var[3], var[4], var[5], var[6], var[7]))
 
 size_t neon_interleaved_despace(char *bytes, size_t howmany) {
@@ -80,7 +47,7 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
      Unzip and OR together:
      [ 00–07, 10–17, 20–27, 30–37, 40–47, 50–57, 60–67, 70–77 ]
      */
-    
+
     uint8x16_t goodBitsZipped[2];
     for (int i = 0; i != 2; ++i) {
       const uint8x16_t mask0 = vreinterpretq_u8_u16(vdupq_n_u16(0x1001));
@@ -106,32 +73,76 @@ size_t neon_interleaved_despace(char *bytes, size_t howmany) {
     uint8x16_t goodBits = vorrq_u8(unzipped.val[0], unzipped.val[1]);
 
     uint8x16_t goodCount = vcntq_u8(goodBits);
-
-    uint8x16_t indices[8];
-    for (int i = 0; i != 8; ++i) {
+    
+    uint8x16_t unzippedIndices[8];
+    _Pragma("unroll") for (int i = 0; i != 8; ++i) {
       /*
-      Suppose that goodBits[i] ends in a 1 followed by k 0's.
-      Then subtracting one will change those to a 0 followed by k 1's, leaving the top bits the same.
-      ANDing will clear the lowest set bit.
-      ANDing minus one with the complemented original will give a number that ends in k 1's, 
-      and zero elsewhere.
-      */
+       Suppose that goodBits[i] ends in a 1 followed by k 0's.
+       Then subtracting one will change those to a 0 followed by k 1's, leaving the top bits the same.
+       ANDing will clear the lowest set bit.
+       ANDing minus one with the complemented original will give a number that ends in k 1's,
+       and zero elsewhere.
+       */
       uint8x16_t minusOne = vsubq_u8(goodBits, vdupq_n_u8(1));
-      indices[i] = vcntq_u8(vbicq_u8(minusOne, goodBits));
+      unzippedIndices[i] = vcntq_u8(vbicq_u8(minusOne, goodBits));
       goodBits = vandq_u8(goodBits, minusOne);
     }
-    transpose_q_8x8(indices);
 
-    _Pragma("unroll") for (int i = 0; i != 2; ++i) {
-      uint8x8_t goodCount_i = (i == 0) ? vget_low_u8(goodCount) : vget_high_u8(goodCount);
-      for (int j = 0; j != 8; ++j) {
-        uint8x8_t originalCharacters = vld1_u8(source + 8 * (8 * i + j));
-        uint8x8_t indices_ij = (i == 0) ? vget_low_u8(indices[j]) : vget_high_u8(indices[j]);
-        uint8x8_t pickedCharacters = vtbl1_u8(originalCharacters, indices_ij);
-        vst1_u8(dest, pickedCharacters);
-        dest += vget_lane_u8(goodCount_i, 0);
-        goodCount_i = vext_u8(goodCount_i, goodCount_i, 1);
-      }
+    #define ZIP_BY_1(v0, v1) \
+      vzipq_u8(v0, v1).val[0], \
+      vzipq_u8(v0, v1).val[1],
+    #define ZIP_BY_2(v0, v1) \
+      vreinterpretq_u8_u16(vzipq_u16(vreinterpretq_u16_u8(v0), vreinterpretq_u16_u8(v1)).val[0]), \
+      vreinterpretq_u8_u16(vzipq_u16(vreinterpretq_u16_u8(v0), vreinterpretq_u16_u8(v1)).val[1]),
+    #define ZIP_BY_4(v0, v1) \
+      vreinterpretq_u8_u32(vzipq_u32(vreinterpretq_u32_u8(v0), vreinterpretq_u32_u8(v1)).val[0]), \
+      vreinterpretq_u8_u32(vzipq_u32(vreinterpretq_u32_u8(v0), vreinterpretq_u32_u8(v1)).val[1]),
+
+    const uint8x16_t indices_01[2] = {
+      ZIP_BY_1(unzippedIndices[0], unzippedIndices[1])
+    };
+    const uint8x16_t indices_23[2] = {
+      ZIP_BY_1(unzippedIndices[2], unzippedIndices[3])
+    };
+    const uint8x16_t indices_45[2] = {
+      ZIP_BY_1(unzippedIndices[4], unzippedIndices[5])
+    };
+    const uint8x16_t indices_67[2] = {
+      ZIP_BY_1(unzippedIndices[6], unzippedIndices[7])
+    };
+    const uint8x16_t indices_0123[4] = {
+      ZIP_BY_2(indices_01[0], indices_23[0])
+      ZIP_BY_2(indices_01[1], indices_23[1])
+    };
+    const uint8x16_t indices_4567[4] = {
+      ZIP_BY_2(indices_45[0], indices_67[0])
+      ZIP_BY_2(indices_45[1], indices_67[1])
+    };
+    const uint8x16_t indices[8] = {
+      ZIP_BY_4(indices_0123[0], indices_4567[0])
+      ZIP_BY_4(indices_0123[1], indices_4567[1])
+      ZIP_BY_4(indices_0123[2], indices_4567[2])
+      ZIP_BY_4(indices_0123[3], indices_4567[3])
+    };
+
+    _Pragma("unroll") for (int i = 0; i != 8; ++i) {
+      const uint8x16_t originalCharacters = vld1q_u8(source + 16 * i);
+
+#if defined(__aarch64__)
+      const uint8x16_t offset = vextq_u8(vdupq_n_u8(0), vdupq_n_u8(8), 8);
+      const uint8x16_t pickedCharacters = vqtbl1q_u8(originalCharacters, vaddq_u8(indices[i], offset));
+      const uint8x8_t pickedCharacters1 = vget_low_u8(pickedCharacters);
+      const uint8x8_t pickedCharacters2 = vget_high_u8(pickedCharacters);
+#else
+      const uint8x8_t pickedCharacters1 = vtbl1_u8(vget_low_u8(originalCharacters), vget_low_u8(indices[i]));
+      const uint8x8_t pickedCharacters2 = vtbl1_u8(vget_high_u8(originalCharacters), vget_high_u8(indices[i]));
+#endif
+
+      vst1_u8(dest, pickedCharacters1);
+      dest += vgetq_lane_u8(goodCount, 0);
+      vst1_u8(dest, pickedCharacters2);
+      dest += vgetq_lane_u8(goodCount, 1);
+      goodCount = vextq_u8(goodCount, goodCount, 2);
     }
 
     source += blockSize;
