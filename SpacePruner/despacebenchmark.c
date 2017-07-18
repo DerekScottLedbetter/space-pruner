@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include "despacer.h"
 #include "interleaved_despacer.h"
+#include "unzipping_despacer.h"
 
 static inline uint64_t time_in_ns() {
   struct timeval tv;
@@ -75,12 +76,16 @@ struct FunctionAndName {
 const struct FunctionAndName functionsToTest[] = {
   FUNCTION_AND_NAME(despace),
 #if __ARM_NEON
-  FUNCTION_AND_NAME(neon_despace),
-  FUNCTION_AND_NAME(neon_despace_branchless),
+  //FUNCTION_AND_NAME(neon_despace),
+  //FUNCTION_AND_NAME(neon_despace_branchless),
 #if defined(__aarch64__)
   FUNCTION_AND_NAME(neontbl_despace),
 #endif
+
   FUNCTION_AND_NAME(neon_interleaved_despace),
+#if defined(__aarch64__)
+  FUNCTION_AND_NAME(neon_unzipping_despace),
+#endif
 #endif
 };
 const size_t functionsToTestCount = sizeof(functionsToTest) / sizeof(functionsToTest[0]);
@@ -142,12 +147,15 @@ void despace_benchmark(FILE* stream) {
   fprintf(stream, "\nns per operation:\n");
   BEST_TIME(despace);
 #if __ARM_NEON
-  BEST_TIME(neon_despace);
-  BEST_TIME(neon_despace_branchless);
+  //BEST_TIME(neon_despace);
+  //BEST_TIME(neon_despace_branchless);
 #if defined(__aarch64__)
   BEST_TIME(neontbl_despace);
 #endif
   BEST_TIME(neon_interleaved_despace);
+#if defined(__aarch64__)
+  BEST_TIME(neon_unzipping_despace);
+#endif
 #endif // __ARM_NEON
   fprintf(stream, "\n");
 

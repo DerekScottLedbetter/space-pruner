@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		652BA0661F0F199A00A692A9 /* despacebenchmark.c in Sources */ = {isa = PBXBuildFile; fileRef = 652BA0641F0F11D000A692A9 /* despacebenchmark.c */; };
+		653A6ED31F1D6BE80072A1E1 /* unzipping_despacer.c in Sources */ = {isa = PBXBuildFile; fileRef = 653A6ED11F1D6BE80072A1E1 /* unzipping_despacer.c */; };
 		657FB1BB1F0E177400452EA8 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1BA1F0E177400452EA8 /* AppDelegate.m */; };
 		657FB1BE1F0E177400452EA8 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 657FB1BD1F0E177400452EA8 /* ViewController.m */; };
 		657FB1C11F0E177400452EA8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 657FB1BF1F0E177400452EA8 /* Main.storyboard */; };
@@ -22,6 +23,8 @@
 		652BA0631F0F11D000A692A9 /* despacer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = despacer.h; sourceTree = "<group>"; };
 		652BA0641F0F11D000A692A9 /* despacebenchmark.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = despacebenchmark.c; sourceTree = "<group>"; };
 		652BA0651F0F18BD00A692A9 /* despacebenchmark.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = despacebenchmark.h; sourceTree = "<group>"; };
+		653A6ED11F1D6BE80072A1E1 /* unzipping_despacer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzipping_despacer.c; sourceTree = "<group>"; };
+		653A6ED21F1D6BE80072A1E1 /* unzipping_despacer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzipping_despacer.h; sourceTree = "<group>"; };
 		657FB1B61F0E177400452EA8 /* SpacePruner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpacePruner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		657FB1B91F0E177400452EA8 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		657FB1BA1F0E177400452EA8 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -69,6 +72,8 @@
 		657FB1B81F0E177400452EA8 /* SpacePruner */ = {
 			isa = PBXGroup;
 			children = (
+				653A6ED21F1D6BE80072A1E1 /* unzipping_despacer.h */,
+				653A6ED11F1D6BE80072A1E1 /* unzipping_despacer.c */,
 				65F8A5EE1F103A7900D3D221 /* interleaved_despacer.h */,
 				65F8A5ED1F103A7900D3D221 /* interleaved_despacer.c */,
 				65F28EAD1F1823A500F80F65 /* bigtable.h */,
@@ -164,6 +169,7 @@
 				657FB1BB1F0E177400452EA8 /* AppDelegate.m in Sources */,
 				65F8A5EF1F103A7900D3D221 /* interleaved_despacer.c in Sources */,
 				652BA0661F0F199A00A692A9 /* despacebenchmark.c in Sources */,
+				653A6ED31F1D6BE80072A1E1 /* unzipping_despacer.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
