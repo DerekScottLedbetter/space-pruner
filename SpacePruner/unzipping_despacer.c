@@ -122,21 +122,16 @@ size_t neon_unzipping_despace(char *bytes, size_t howmany) {
       level2[2*i + 1] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(evens), vreinterpretq_u16_u8(odds)));
     }
 
-    uint8x16_t level3[8];
+    uint8x16_t indices[8];
     _Pragma("unroll") for (int i = 0; i != 4; ++i) {
+      // There's at most 2 set bits left, so just read their positions directly.
       const uint8x16_t source = level2[i];
-      const uint8x16_t product = vreinterpretq_u8_p8(vmulq_p8(allOnesPoly, source));
-      const uint8x16_t evens = vandq_u8(source, product);
-      const uint8x16_t odds = vbicq_u8(source, product);
-      level3[2*i + 0] = vreinterpretq_u8_u32(vzip1q_u32(vreinterpretq_u32_u8(evens), vreinterpretq_u32_u8(odds)));
-      level3[2*i + 1] = vreinterpretq_u8_u32(vzip2q_u32(vreinterpretq_u32_u8(evens), vreinterpretq_u32_u8(odds)));
+      const uint8x16_t low = vcntq_u8(vbicq_u8(vsubq_u8(source, vdupq_n_u8(1)), source));
+      const uint8x16_t high = veorq_u8(vdupq_n_u8(7), vclzq_u8(source));
+      indices[2*i + 0] = vreinterpretq_u8_u32(vzip1q_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)));
+      indices[2*i + 1] = vreinterpretq_u8_u32(vzip2q_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)));
     }
 
-    uint8x16_t indices[8];
-    _Pragma("unroll") for (int i = 0; i != 8; ++i) {
-      indices[i] = vcntq_u8(vsubq_u8(level3[i], vdupq_n_u8(1)));
-    }
-    
     _Pragma("unroll") for (int i = 0; i != 8; ++i) {
       const uint8x16_t originalCharacters = vld1q_u8(source + 16 * i);
 
