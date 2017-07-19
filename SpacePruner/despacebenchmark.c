@@ -81,11 +81,8 @@ const struct FunctionAndName functionsToTest[] = {
 #if defined(__aarch64__)
   FUNCTION_AND_NAME(neontbl_despace),
 #endif
-
   FUNCTION_AND_NAME(neon_interleaved_despace),
-#if defined(__aarch64__)
   FUNCTION_AND_NAME(neon_unzipping_despace),
-#endif
 #endif
 };
 const size_t functionsToTestCount = sizeof(functionsToTest) / sizeof(functionsToTest[0]);
@@ -153,9 +150,7 @@ void despace_benchmark(FILE* stream) {
   BEST_TIME(neontbl_despace);
 #endif
   BEST_TIME(neon_interleaved_despace);
-#if defined(__aarch64__)
   BEST_TIME(neon_unzipping_despace);
-#endif
 #endif // __ARM_NEON
   fprintf(stream, "\n");
 

@@ -11,7 +11,7 @@
 #include <ConditionalMacros.h>
 #include <stddef.h>
 
-#ifdef __aarch64__
+#ifdef __ARM_NEON
 size_t neon_unzipping_despace(char *bytes, size_t howmany);
 #endif
 

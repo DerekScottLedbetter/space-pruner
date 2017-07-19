@@ -7,7 +7,7 @@
 
 #include "unzipping_despacer.h"
 
-#ifdef __aarch64__
+#ifdef __ARM_NEON
 #include <arm_neon.h>
 
 size_t neon_unzipping_despace(char *bytes, size_t howmany) {
@@ -108,8 +108,8 @@ size_t neon_unzipping_despace(char *bytes, size_t howmany) {
       const uint8x16_t product = vreinterpretq_u8_p8(vmulq_p8(allOnesPoly, source));
       const uint8x16_t evens = vandq_u8(source, product);
       const uint8x16_t odds = vbicq_u8(source, product);
-      level1[0] = vzip1q_u8(evens, odds);
-      level1[1] = vzip2q_u8(evens, odds);
+      level1[0] = vzipq_u8(evens, odds).val[0];
+      level1[1] = vzipq_u8(evens, odds).val[1];
     }
 
     uint8x16_t level2[4];
@@ -118,8 +118,8 @@ size_t neon_unzipping_despace(char *bytes, size_t howmany) {
       const uint8x16_t product = vreinterpretq_u8_p8(vmulq_p8(allOnesPoly, source));
       const uint8x16_t evens = vandq_u8(source, product);
       const uint8x16_t odds = vbicq_u8(source, product);
-      level2[2*i + 0] = vreinterpretq_u8_u16(vzip1q_u16(vreinterpretq_u16_u8(evens), vreinterpretq_u16_u8(odds)));
-      level2[2*i + 1] = vreinterpretq_u8_u16(vzip2q_u16(vreinterpretq_u16_u8(evens), vreinterpretq_u16_u8(odds)));
+      level2[2*i + 0] = vreinterpretq_u8_u16(vzipq_u16(vreinterpretq_u16_u8(evens), vreinterpretq_u16_u8(odds)).val[0]);
+      level2[2*i + 1] = vreinterpretq_u8_u16(vzipq_u16(vreinterpretq_u16_u8(evens), vreinterpretq_u16_u8(odds)).val[1]);
     }
 
     uint8x16_t indices[8];
@@ -128,17 +128,22 @@ size_t neon_unzipping_despace(char *bytes, size_t howmany) {
       const uint8x16_t source = level2[i];
       const uint8x16_t low = vcntq_u8(vbicq_u8(vsubq_u8(source, vdupq_n_u8(1)), source));
       const uint8x16_t high = veorq_u8(vdupq_n_u8(7), vclzq_u8(source));
-      indices[2*i + 0] = vreinterpretq_u8_u32(vzip1q_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)));
-      indices[2*i + 1] = vreinterpretq_u8_u32(vzip2q_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)));
+      indices[2*i + 0] = vreinterpretq_u8_u32(vzipq_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)).val[0]);
+      indices[2*i + 1] = vreinterpretq_u8_u32(vzipq_u32(vreinterpretq_u32_u8(low), vreinterpretq_u32_u8(high)).val[1]);
     }
 
     _Pragma("unroll") for (int i = 0; i != 8; ++i) {
       const uint8x16_t originalCharacters = vld1q_u8(source + 16 * i);
 
+#if defined(__aarch64__)
       const uint8x16_t offset = vextq_u8(vdupq_n_u8(0), vdupq_n_u8(8), 8);
       const uint8x16_t pickedCharacters = vqtbl1q_u8(originalCharacters, vaddq_u8(indices[i], offset));
       const uint8x8_t pickedCharacters1 = vget_low_u8(pickedCharacters);
       const uint8x8_t pickedCharacters2 = vget_high_u8(pickedCharacters);
+#else
+      const uint8x8_t pickedCharacters1 = vtbl1_u8(vget_low_u8(originalCharacters), vget_low_u8(indices[i]));
+      const uint8x8_t pickedCharacters2 = vtbl1_u8(vget_high_u8(originalCharacters), vget_high_u8(indices[i]));
+#endif
 
       vst1_u8(dest, pickedCharacters1);
       dest += vgetq_lane_u8(goodCount, 0);
@@ -158,4 +163,4 @@ size_t neon_unzipping_despace(char *bytes, size_t howmany) {
   return (char*)dest - bytes;
 }
 
-#endif // __aarch64__
+#endif // __ARM_NEON
